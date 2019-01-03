@@ -1,18 +1,20 @@
 package com.github.lubang.example.todolist.domain.models
 
+import com.github.lubang.example.todolist.cores.Entity
 import org.joda.time.DateTime
 
 class TodoItem(
+    override val id: Long,
     message: String,
-    dependentItems: Set<TodoItem> = setOf(),
-    val writtenAt: DateTime = DateTime(),
-    modifiedAt: DateTime = DateTime()
-) {
+    dependentIds: Set<Long>,
+    val writtenAt: DateTime,
+    modifiedAt: DateTime
+) : Entity {
 
     var message: String = message
         private set
 
-    var dependentItems: Set<TodoItem> = dependentItems
+    var dependentIds: Set<Long> = dependentIds
         private set
 
     var modifiedAt: DateTime = modifiedAt
@@ -23,22 +25,21 @@ class TodoItem(
 
     fun modify(
         message: String? = null,
-        dependentItems: Set<TodoItem>? = null
+        dependentIds: Set<Long>? = null
     ) {
         if (this.isDone) {
             throw IllegalStateException("TodoItem could not modified cause TodoItem was done")
         }
-        if (message == null && dependentItems == null) {
+        if (message == null && dependentIds == null) {
             throw IllegalArgumentException("TodoItem should be required a non-null parameter")
         }
 
         if (message != null) this.message = message
-        if (dependentItems != null) this.dependentItems = dependentItems
+        if (dependentIds != null) this.dependentIds = dependentIds
         this.modifiedAt = DateTime()
     }
 
     fun done() {
         this.isDone = true
     }
-
 }
