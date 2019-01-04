@@ -5,12 +5,11 @@ import com.github.lubang.example.todolist.domain.models.TodoItemRepository
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.deleteAll
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.util.*
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
+import kotlin.test.*
 
 internal class ExposedTodoItemRepositoryTest {
     @BeforeTest
@@ -21,6 +20,13 @@ internal class ExposedTodoItemRepositoryTest {
         config.validate()
 
         Database.connect(HikariDataSource(config))
+    }
+
+    @AfterTest
+    fun teardown() {
+        transaction {
+            ExposedTodoItemRepository.TodoItems.deleteAll()
+        }
     }
 
     @Test
@@ -135,5 +141,31 @@ internal class ExposedTodoItemRepositoryTest {
         // Assert
         assertNotEquals(todoItem, actual)
         assertEquals(setOf(todoItem1.id), actual.dependentIds)
+    }
+
+    @Test
+    fun `should be found result with a offset and a count`() {
+        // Arrange
+        val repository: TodoItemRepository = ExposedTodoItemRepository()
+        for (i in 0..15) {
+            val todoItem = TodoItem(
+                UUID.randomUUID(),
+                "P$i",
+                "Wake up 8:00 to climb a rock",
+                setOf(),
+                false,
+                DateTime("2019-10-19T00:00:00+09:00"),
+                DateTime("2019-10-19T00:00:00+09:00")
+            )
+            repository.save(todoItem)
+        }
+
+        // Act
+        val actual = repository.find(10, 2)
+
+        // Assert
+        assertEquals(2, actual.size)
+        assertEquals("P10", actual[0].key)
+        assertEquals("P11", actual[1].key)
     }
 }

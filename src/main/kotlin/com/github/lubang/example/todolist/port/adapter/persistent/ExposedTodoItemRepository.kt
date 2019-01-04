@@ -45,6 +45,17 @@ class ExposedTodoItemRepository : TodoItemRepository {
         }
     }
 
+    override fun find(offset: Int, count: Int): List<TodoItem> {
+        return transaction {
+            TodoItems
+                .selectAll()
+                .orderBy(TodoItems.writtenAt)
+                .limit(count, offset)
+                .map { toTodoItem(it) }
+                .toList()
+        }
+    }
+
     override fun delete(id: UUID) {
         transaction {
             TodoItems
@@ -57,7 +68,7 @@ class ExposedTodoItemRepository : TodoItemRepository {
         val key = varchar("key", 100).uniqueIndex()
         val message = varchar("message", 250)
         val isCompleted = bool("isCompleted")
-        val writtenAt = datetime("writtenAt")
+        val writtenAt = datetime("writtenAt").index()
         val modifiedAt = datetime("modifiedAt")
     }
 
