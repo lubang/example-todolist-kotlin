@@ -1,26 +1,47 @@
 package com.github.lubang.example.todolist.domain.models
 
 import org.joda.time.DateTime
-import org.junit.Test
+import java.util.*
+import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 
 internal class TodoItemTest {
-
     @Test
-    fun `should be changed a modifiedAt to current time when it modifies a field`() {
-        val todoItem = TodoItem(
-            1L,
+    fun `should be created with a message`() {
+        // Arrange
+        val id = UUID.randomUUID()
+
+        // Act
+        val actual = TodoItem(
+            id,
+            "1",
             "Wake up 8:00 to climb a rock",
-            mutableSetOf(),
+            setOf(),
+            false,
             DateTime("2019-10-19T00:00:00+09:00"),
             DateTime("2019-10-19T00:00:00+09:00")
         )
 
-        todoItem.modify(
-            message = "Wake up 9:00 to go swim!"
+        // Assert
+        assertEquals(id, actual.id)
+        assertEquals("1", actual.key)
+        assertEquals("Wake up 8:00 to climb a rock", actual.message)
+    }
+
+    @Test
+    fun `should be changed a modifiedAt to current time when it modifies a message field`() {
+        val todoItem = TodoItem(
+            UUID.randomUUID(),
+            "1",
+            "Wake up 8:00 to climb a rock",
+            setOf(),
+            false,
+            DateTime("2019-10-19T00:00:00+09:00"),
+            DateTime("2019-10-19T00:00:00+09:00")
         )
+
+        todoItem.message = "Wake up 9:00 to go swim!"
 
         assertEquals("Wake up 9:00 to go swim!", todoItem.message)
         assertEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.writtenAt)
@@ -28,51 +49,85 @@ internal class TodoItemTest {
     }
 
     @Test
+    fun `should be changed a modifiedAt to current time when it modifies a key field`() {
+        val todoItem = TodoItem(
+            UUID.randomUUID(),
+            "1",
+            "Wake up 8:00 to climb a rock",
+            setOf(),
+            false,
+            DateTime("2019-10-19T00:00:00+09:00"),
+            DateTime("2019-10-19T00:00:00+09:00")
+        )
+
+        todoItem.key = "36"
+
+        assertEquals("36", todoItem.key)
+        assertEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.writtenAt)
+        assertNotEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.modifiedAt)
+    }
+
+    @Test
     fun `should be done status when it's done`() {
         val todoItem = TodoItem(
-            1L,
+            UUID.randomUUID(),
+            "1",
             "This is a TodoItem message",
-            mutableSetOf(),
+            setOf(),
+            false,
             DateTime("2019-10-19T00:00:00+09:00"),
             DateTime("2019-10-19T00:00:00+09:00")
         )
 
         todoItem.done()
 
-        assertEquals(true, todoItem.isDone)
+        assertEquals(true, todoItem.isCompleted)
+        assertNotEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.modifiedAt)
     }
 
     @Test
-    fun `should be thrown IllegalStateException when it's done`() {
-        val todoItem = TodoItem(
-            1L,
+    fun `should be equals with the exactly same values`() {
+        val id = UUID.randomUUID()
+        val firstItem = TodoItem(
+            id,
+            "1",
             "This is a TodoItem message",
-            mutableSetOf(),
+            setOf(),
+            false,
             DateTime("2019-10-19T00:00:00+09:00"),
             DateTime("2019-10-19T00:00:00+09:00")
         )
-        todoItem.done()
-
-        val exception = assertFailsWith(IllegalStateException::class) {
-            todoItem.modify("It'll be thrown!")
-        }
-        assertEquals("TodoItem could not modified cause TodoItem was done", exception.message)
-    }
-
-    @Test
-    fun `should be thrown IllegalArgumentException when it's modified with null`() {
-        val todoItem = TodoItem(
-            1L,
+        val secondItem = TodoItem(
+            id,
+            "1",
             "This is a TodoItem message",
-            mutableSetOf(),
+            setOf(),
+            false,
             DateTime("2019-10-19T00:00:00+09:00"),
             DateTime("2019-10-19T00:00:00+09:00")
         )
 
-        val exception = assertFailsWith(IllegalArgumentException::class) {
-            todoItem.modify()
-        }
-        assertEquals("TodoItem should be required a non-null parameter", exception.message)
+        assertEquals(firstItem, secondItem)
+        assertEquals(firstItem.hashCode(), secondItem.hashCode())
+    }
+
+    @Test
+    fun `should be depended on an other topic item`() {
+        val dependentId = UUID.randomUUID()
+        val todoItem = TodoItem(
+            UUID.randomUUID(),
+            "1",
+            "This is a TodoItem message",
+            setOf(),
+            false,
+            DateTime("2019-10-19T00:00:00+09:00"),
+            DateTime("2019-10-19T00:00:00+09:00")
+        )
+
+        todoItem.dependOn(dependentId)
+
+        assertEquals(dependentId, todoItem.dependentIds.first())
+        assertNotEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.modifiedAt)
     }
 
 }

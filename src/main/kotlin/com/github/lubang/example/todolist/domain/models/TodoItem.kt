@@ -1,45 +1,79 @@
 package com.github.lubang.example.todolist.domain.models
 
-import com.github.lubang.example.todolist.cores.Entity
 import org.joda.time.DateTime
+import java.util.*
 
 class TodoItem(
-    override val id: Long,
+    val id: UUID,
+    key: String,
     message: String,
-    dependentIds: Set<Long>,
+    dependentIds: Set<UUID>,
+    isCompleted: Boolean,
     val writtenAt: DateTime,
     modifiedAt: DateTime
-) : Entity {
+) {
+    var key: String = key
+        set(value) {
+            field = value
+            modifiedAt = DateTime()
+        }
 
     var message: String = message
-        private set
-
-    var dependentIds: Set<Long> = dependentIds
-        private set
+        set(value) {
+            field = value
+            modifiedAt = DateTime()
+        }
 
     var modifiedAt: DateTime = modifiedAt
         private set
 
-    var isDone: Boolean = false
-        private set
-
-    fun modify(
-        message: String? = null,
-        dependentIds: Set<Long>? = null
-    ) {
-        if (this.isDone) {
-            throw IllegalStateException("TodoItem could not modified cause TodoItem was done")
-        }
-        if (message == null && dependentIds == null) {
-            throw IllegalArgumentException("TodoItem should be required a non-null parameter")
+    var isCompleted: Boolean = isCompleted
+        private set(value) {
+            field = value
+            modifiedAt = DateTime()
         }
 
-        if (message != null) this.message = message
-        if (dependentIds != null) this.dependentIds = dependentIds
-        this.modifiedAt = DateTime()
+    var dependentIds: Set<UUID> = dependentIds
+        private set(value) {
+            field = value
+            modifiedAt = DateTime()
+        }
+
+    fun dependOn(dependentId: UUID) {
+        val mutableSet = this.dependentIds.toMutableSet()
+        mutableSet.add(dependentId)
+        this.dependentIds = mutableSet
     }
 
     fun done() {
-        this.isDone = true
+        this.isCompleted = true
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TodoItem
+
+        if (id != other.id) return false
+        if (writtenAt != other.writtenAt) return false
+        if (key != other.key) return false
+        if (message != other.message) return false
+        if (modifiedAt != other.modifiedAt) return false
+        if (isCompleted != other.isCompleted) return false
+        if (dependentIds != other.dependentIds) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + writtenAt.hashCode()
+        result = 31 * result + key.hashCode()
+        result = 31 * result + message.hashCode()
+        result = 31 * result + modifiedAt.hashCode()
+        result = 31 * result + isCompleted.hashCode()
+        result = 31 * result + dependentIds.hashCode()
+        return result
     }
 }

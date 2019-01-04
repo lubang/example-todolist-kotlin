@@ -1,12 +1,9 @@
 package com.github.lubang.example.todolist.domain.models
 
-import org.joda.time.DateTime
+import java.util.*
 
 interface TodoItemRepository {
-    fun save(
-        message: String,
-        dependentIds: Set<Long> = setOf(),
-        writtenAt: DateTime = DateTime(),
-        modifiedAt: DateTime = DateTime()
-    ): TodoItem
+    fun save(todoItem: TodoItem)
+    fun findById(id: UUID): TodoItem
+    fun delete(id: UUID)
 }
