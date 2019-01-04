@@ -68,7 +68,7 @@ internal class TodoItemTest {
     }
 
     @Test
-    fun `should be done status when it's done`() {
+    fun `should be completed status when it's complete`() {
         val todoItem = TodoItem(
             UUID.randomUUID(),
             "1",
@@ -79,9 +79,27 @@ internal class TodoItemTest {
             DateTime("2019-10-19T00:00:00+09:00")
         )
 
-        todoItem.done()
+        todoItem.complete()
 
         assertEquals(true, todoItem.isCompleted)
+        assertNotEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.modifiedAt)
+    }
+
+    @Test
+    fun `should be not completed status when it's incomplete`() {
+        val todoItem = TodoItem(
+            UUID.randomUUID(),
+            "1",
+            "This is a TodoItem message",
+            setOf(),
+            true,
+            DateTime("2019-10-19T00:00:00+09:00"),
+            DateTime("2019-10-19T00:00:00+09:00")
+        )
+
+        todoItem.incomplete()
+
+        assertEquals(false, todoItem.isCompleted)
         assertNotEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.modifiedAt)
     }
 
@@ -112,7 +130,7 @@ internal class TodoItemTest {
     }
 
     @Test
-    fun `should be depended on an other topic item`() {
+    fun `should be depended on an other todo item`() {
         val dependentId = UUID.randomUUID()
         val todoItem = TodoItem(
             UUID.randomUUID(),
@@ -129,5 +147,4 @@ internal class TodoItemTest {
         assertEquals(dependentId, todoItem.dependentIds.first())
         assertNotEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.modifiedAt)
     }
-
 }

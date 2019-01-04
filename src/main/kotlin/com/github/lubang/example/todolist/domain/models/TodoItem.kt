@@ -45,8 +45,12 @@ class TodoItem(
         this.dependentIds = mutableSet
     }
 
-    fun done() {
+    fun complete() {
         this.isCompleted = true
+    }
+
+    fun incomplete() {
+        this.isCompleted = false
     }
 
     override fun equals(other: Any?): Boolean {
