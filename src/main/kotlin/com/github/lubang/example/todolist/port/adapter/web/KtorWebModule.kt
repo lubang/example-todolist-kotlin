@@ -1,6 +1,7 @@
 package com.github.lubang.example.todolist.port.adapter.web
 
 import com.github.lubang.example.todolist.port.adapter.serialization.GsonUtility
+import com.github.lubang.example.todolist.port.adapter.web.api.KtorRouteApi
 import com.google.inject.AbstractModule
 import io.ktor.application.Application
 import io.ktor.application.install

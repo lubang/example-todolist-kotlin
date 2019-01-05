@@ -1,150 +1,174 @@
 package com.github.lubang.example.todolist.domain.models
 
 import org.joda.time.DateTime
-import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 
 internal class TodoItemTest {
     @Test
-    fun `should be created with a message`() {
+    fun `create with a message`() {
         // Arrange
-        val id = UUID.randomUUID()
+        val message = "Wake up 8:00 to climb a rock"
 
         // Act
-        val actual = TodoItem(
-            id,
-            "1",
-            "Wake up 8:00 to climb a rock",
-            setOf(),
-            false,
-            DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
-        )
+        val actual = TodoItem.create(message)
 
         // Assert
-        assertEquals(id, actual.id)
-        assertEquals("1", actual.key)
         assertEquals("Wake up 8:00 to climb a rock", actual.message)
     }
 
     @Test
-    fun `should be changed a modifiedAt to current time when it modifies a message field`() {
-        val todoItem = TodoItem(
-            UUID.randomUUID(),
-            "1",
+    fun `create with all arguments for a persisted data`() {
+        // Arrange
+
+        // Act
+        val actual = TodoItem.create(
+            1L,
             "Wake up 8:00 to climb a rock",
-            setOf(),
-            false,
-            DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
-        )
-
-        todoItem.message = "Wake up 9:00 to go swim!"
-
-        assertEquals("Wake up 9:00 to go swim!", todoItem.message)
-        assertEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.writtenAt)
-        assertNotEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.modifiedAt)
-    }
-
-    @Test
-    fun `should be changed a modifiedAt to current time when it modifies a key field`() {
-        val todoItem = TodoItem(
-            UUID.randomUUID(),
-            "1",
-            "Wake up 8:00 to climb a rock",
-            setOf(),
-            false,
-            DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
-        )
-
-        todoItem.key = "36"
-
-        assertEquals("36", todoItem.key)
-        assertEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.writtenAt)
-        assertNotEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.modifiedAt)
-    }
-
-    @Test
-    fun `should be completed status when it's complete`() {
-        val todoItem = TodoItem(
-            UUID.randomUUID(),
-            "1",
-            "This is a TodoItem message",
-            setOf(),
-            false,
-            DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
-        )
-
-        todoItem.complete()
-
-        assertEquals(true, todoItem.isCompleted)
-        assertNotEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.modifiedAt)
-    }
-
-    @Test
-    fun `should be not completed status when it's incomplete`() {
-        val todoItem = TodoItem(
-            UUID.randomUUID(),
-            "1",
-            "This is a TodoItem message",
             setOf(),
             true,
             DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
+            DateTime("2019-10-19T00:01:00+09:00"),
+            DateTime("2019-10-19T00:02:00+09:00")
         )
 
+        // Assert
+        assertEquals(1L, actual.id)
+        assertEquals("Wake up 8:00 to climb a rock", actual.message)
+        assertEquals(setOf(), actual.dependentIds)
+        assertEquals(true, actual.completed)
+        assertEquals(DateTime("2019-10-19T00:00:00+09:00"), actual.writtenAt)
+        assertEquals(DateTime("2019-10-19T00:01:00+09:00"), actual.modifiedAt)
+        assertEquals(DateTime("2019-10-19T00:02:00+09:00"), actual.completedAt)
+    }
+
+    @Test
+    fun `equals and hashcode`() {
+        // Arrange
+
+        // Act
+        val todoItem1 = TodoItem.create(
+            1L,
+            "Wake up 8:00 to climb a rock",
+            setOf(),
+            true,
+            DateTime("2019-10-19T00:00:00+09:00"),
+            DateTime("2019-10-19T00:01:00+09:00"),
+            DateTime("2019-10-19T00:02:00+09:00")
+        )
+        val todoItem2 = TodoItem.create(
+            1L,
+            "Wake up 8:00 to climb a rock",
+            setOf(),
+            true,
+            DateTime("2019-10-19T00:00:00+09:00"),
+            DateTime("2019-10-19T00:01:00+09:00"),
+            DateTime("2019-10-19T00:02:00+09:00")
+        )
+
+        // Assert
+        assertEquals(todoItem1, todoItem2)
+        assertEquals(todoItem1.hashCode(), todoItem2.hashCode())
+    }
+
+    @Test
+    fun `edit a message should change a modified time`() {
+        // Arrange
+        val todoItem = TodoItem.create("Wake up 8:00 to climb a rock")
+
+        // Act
+        todoItem.editMessage("Wake up 9:00 to go swim!")
+
+        // Assert
+        assertEquals("Wake up 9:00 to go swim!", todoItem.message)
+        assertNotNull(todoItem.modifiedAt)
+    }
+
+    @Test
+    fun `complete should change a completed and a completed time`() {
+        // Arrange
+        val todoItem = TodoItem.create(
+            1L,
+            "Wake up 8:00 to climb a rock",
+            setOf(),
+            false,
+            DateTime("2019-10-19T00:00:00+09:00"),
+            DateTime("2019-10-19T00:00:00+09:00"),
+            null
+        )
+
+        // Act
+        todoItem.complete()
+
+        // Arrange
+        assertEquals(true, todoItem.completed)
+        assertNotNull(todoItem.completedAt)
+    }
+
+    @Test
+    fun `incomplete should change a completed and a completed time`() {
+        // Arrange
+        val todoItem = TodoItem.create(
+            1L,
+            "Wake up 8:00 to climb a rock",
+            setOf(),
+            true,
+            DateTime("2019-10-19T00:00:00+09:00"),
+            DateTime("2019-10-19T00:01:00+09:00"),
+            DateTime("2019-10-19T00:02:00+09:00")
+        )
+
+        // Act
         todoItem.incomplete()
 
-        assertEquals(false, todoItem.isCompleted)
-        assertNotEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.modifiedAt)
+        // Assert
+        assertEquals(false, todoItem.completed)
+        assertEquals(null, todoItem.completedAt)
     }
 
     @Test
-    fun `should be equals with the exactly same values`() {
-        val id = UUID.randomUUID()
-        val firstItem = TodoItem(
-            id,
-            "1",
-            "This is a TodoItem message",
+    fun `add a dependent Id should add an Id in a dependent Id set`() {
+        // Arrange
+        val todoItem = TodoItem.create(
+            2L,
+            "Wake up 8:00 to climb a rock",
             setOf(),
-            false,
+            true,
             DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
+            DateTime("2019-10-19T00:01:00+09:00"),
+            null
         )
-        val secondItem = TodoItem(
-            id,
-            "1",
-            "This is a TodoItem message",
-            setOf(),
-            false,
-            DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
-        )
+        val dependentId = 1L
 
-        assertEquals(firstItem, secondItem)
-        assertEquals(firstItem.hashCode(), secondItem.hashCode())
+        // Act
+        todoItem.addDependentId(dependentId)
+
+        // Assert
+        assertEquals(setOf(1L), todoItem.dependentIds)
+        assertNotEquals(DateTime("2019-10-19T00:01:00+09:00"), todoItem.modifiedAt)
     }
 
     @Test
-    fun `should be depended on an other todo item`() {
-        val dependentId = UUID.randomUUID()
-        val todoItem = TodoItem(
-            UUID.randomUUID(),
-            "1",
-            "This is a TodoItem message",
-            setOf(),
-            false,
+    fun `remove a dependent Id should remove an Id in a dependent Id set`() {
+        // Arrange
+        val todoItem = TodoItem.create(
+            2L,
+            "Wake up 8:00 to climb a rock",
+            setOf(1L),
+            true,
             DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
+            DateTime("2019-10-19T00:01:00+09:00"),
+            null
         )
+        val dependentId = 1L
 
-        todoItem.dependOn(dependentId)
+        // Act
+        todoItem.removeDependentId(dependentId)
 
-        assertEquals(dependentId, todoItem.dependentIds.first())
-        assertNotEquals(DateTime("2019-10-19T00:00:00+09:00"), todoItem.modifiedAt)
+        // Assert
+        assertEquals(setOf(), todoItem.dependentIds)
+        assertNotEquals(DateTime("2019-10-19T00:01:00+09:00"), todoItem.modifiedAt)
     }
 }

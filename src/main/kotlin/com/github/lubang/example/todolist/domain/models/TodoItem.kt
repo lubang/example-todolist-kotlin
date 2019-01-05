@@ -1,56 +1,61 @@
 package com.github.lubang.example.todolist.domain.models
 
 import org.joda.time.DateTime
-import java.util.*
 
-class TodoItem(
-    val id: UUID,
-    key: String,
+class TodoItem
+private constructor(
+    val id: Long,
     message: String,
-    dependentIds: Set<UUID>,
-    isCompleted: Boolean,
-    val writtenAt: DateTime,
-    modifiedAt: DateTime
+    dependentIds: Set<Long> = setOf(),
+    completed: Boolean = false,
+    val writtenAt: DateTime = DateTime(),
+    modifiedAt: DateTime = DateTime(),
+    completedAt: DateTime? = null
 ) {
-    var key: String = key
-        set(value) {
-            field = value
-            modifiedAt = DateTime()
-        }
-
     var message: String = message
-        set(value) {
-            field = value
-            modifiedAt = DateTime()
-        }
+        private set
+
+    var dependentIds: Set<Long> = dependentIds
+        private set
+
+    var completed: Boolean = completed
+        private set
 
     var modifiedAt: DateTime = modifiedAt
         private set
 
-    var isCompleted: Boolean = isCompleted
-        private set(value) {
-            field = value
-            modifiedAt = DateTime()
-        }
+    var completedAt: DateTime? = completedAt
+        private set
 
-    var dependentIds: Set<UUID> = dependentIds
-        private set(value) {
-            field = value
-            modifiedAt = DateTime()
-        }
+    fun editMessage(message: String) {
+        this.message = message
+        this.modifiedAt = DateTime()
+    }
 
-    fun dependOn(dependentId: UUID) {
+    fun addDependentId(dependentId: Long) {
         val mutableSet = this.dependentIds.toMutableSet()
         mutableSet.add(dependentId)
+
         this.dependentIds = mutableSet
+        this.modifiedAt = DateTime()
+    }
+
+    fun removeDependentId(dependentId: Long) {
+        val mutableSet = this.dependentIds.toMutableSet()
+        mutableSet.remove(dependentId)
+
+        this.dependentIds = mutableSet
+        this.modifiedAt = DateTime()
     }
 
     fun complete() {
-        this.isCompleted = true
+        this.completed = true
+        this.completedAt = DateTime()
     }
 
     fun incomplete() {
-        this.isCompleted = false
+        this.completed = false
+        this.completedAt = null
     }
 
     override fun equals(other: Any?): Boolean {
@@ -61,11 +66,11 @@ class TodoItem(
 
         if (id != other.id) return false
         if (writtenAt != other.writtenAt) return false
-        if (key != other.key) return false
         if (message != other.message) return false
-        if (modifiedAt != other.modifiedAt) return false
-        if (isCompleted != other.isCompleted) return false
         if (dependentIds != other.dependentIds) return false
+        if (completed != other.completed) return false
+        if (modifiedAt != other.modifiedAt) return false
+        if (completedAt != other.completedAt) return false
 
         return true
     }
@@ -73,11 +78,31 @@ class TodoItem(
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + writtenAt.hashCode()
-        result = 31 * result + key.hashCode()
         result = 31 * result + message.hashCode()
-        result = 31 * result + modifiedAt.hashCode()
-        result = 31 * result + isCompleted.hashCode()
         result = 31 * result + dependentIds.hashCode()
+        result = 31 * result + completed.hashCode()
+        result = 31 * result + modifiedAt.hashCode()
+        result = 31 * result + (completedAt?.hashCode() ?: 0)
         return result
+    }
+
+    companion object {
+        private const val TRANSIENT_ID = -1L
+
+        fun create(message: String): TodoItem {
+            return TodoItem(TRANSIENT_ID, message)
+        }
+
+        fun create(
+            id: Long,
+            message: String,
+            dependentIds: Set<Long>,
+            completed: Boolean,
+            writtenAt: DateTime,
+            modifiedAt: DateTime,
+            completedAt: DateTime?
+        ): TodoItem {
+            return TodoItem(id, message, dependentIds, completed, writtenAt, modifiedAt, completedAt)
+        }
     }
 }

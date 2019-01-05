@@ -7,9 +7,10 @@ import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.joda.time.DateTime
-import java.util.*
-import kotlin.test.*
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 internal class ExposedTodoItemRepositoryTest {
     @BeforeTest
@@ -26,137 +27,77 @@ internal class ExposedTodoItemRepositoryTest {
     fun teardown() {
         transaction {
             ExposedTodoItemRepository.TodoItems.deleteAll()
+            ExposedTodoItemRepository.Dependencies.deleteAll()
         }
     }
 
     @Test
-    fun `should save and findById a TodoItem in H2 Database`() {
+    fun `save a todo item with an unique Id`() {
         // Arrange
         val repository: TodoItemRepository = ExposedTodoItemRepository()
-        val todoItem = TodoItem(
-            UUID.randomUUID(),
-            "1",
-            "Wake up 8:00 to climb a rock",
-            setOf(),
-            false,
-            DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
-        )
+        val todoItem = TodoItem.create("Wake up 8:00 to climb a rock")
 
         // Act
-        repository.save(todoItem)
-        val actual = repository.findById(todoItem.id)
+        val id = repository.save(todoItem)
+        val actual = repository.findById(id)
 
         // Assert
-        assertEquals(todoItem, actual)
+        assertEquals(todoItem.message, actual.message)
     }
 
     @Test
-    fun `should save and findById a TodoItem with dependencies`() {
+    fun `find by ID should be with dependent IDs`() {
         // Arrange
         val repository: TodoItemRepository = ExposedTodoItemRepository()
 
-        val todoItem1 = TodoItem(
-            UUID.randomUUID(),
-            "D1",
-            "Wake up 8:00 to climb a rock",
-            setOf(),
-            false,
-            DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
-        )
-        repository.save(todoItem1)
+        val todoItem1 = TodoItem.create("Wake up 8:00 to climb a rock 1")
+        val todoItem2 = TodoItem.create("Wake up 8:00 to climb a rock 2")
+        val todoItem1Id = repository.save(todoItem1)
+        val todoItem2Id = repository.save(todoItem2)
 
-        val todoItem2 = TodoItem(
-            UUID.randomUUID(),
-            "D2",
-            "Wake up 8:00 to climb a rock",
-            setOf(),
-            false,
-            DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
-        )
-        repository.save(todoItem2)
-
-        val todoItem = TodoItem(
-            UUID.randomUUID(),
-            "D3",
-            "Wake up 8:00 to climb a rock",
-            setOf(todoItem1.id, todoItem2.id),
-            false,
-            DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
-        )
+        val todoItem = TodoItem.create("Wake up 8:00 to climb a rock 3")
+        todoItem.addDependentId(todoItem1Id)
+        todoItem.addDependentId(todoItem2Id)
+        val todoItemId = repository.save(todoItem)
 
         // Act
-        repository.save(todoItem)
-        val actual = repository.findById(todoItem.id)
+        val actual = repository.findById(todoItemId)
 
         // Assert
-        assertEquals(todoItem, actual)
+        assertEquals("Wake up 8:00 to climb a rock 3", actual.message)
+        assertEquals(setOf(todoItem1Id, todoItem2Id), actual.dependentIds)
     }
 
     @Test
-    fun `should delete dependencies when a todo item is deleted`() {
+    fun `delete a todo item should remove a dependency in others`() {
         // Arrange
         val repository: TodoItemRepository = ExposedTodoItemRepository()
 
-        val todoItem1 = TodoItem(
-            UUID.randomUUID(),
-            "D11",
-            "Wake up 8:00 to climb a rock",
-            setOf(),
-            false,
-            DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
-        )
-        repository.save(todoItem1)
+        val todoItem1 = TodoItem.create("Wake up 8:00 to climb a rock 1")
+        val todoItem2 = TodoItem.create("Wake up 8:00 to climb a rock 2")
+        val todoItem1Id = repository.save(todoItem1)
+        val todoItem2Id = repository.save(todoItem2)
 
-        val todoItem2 = TodoItem(
-            UUID.randomUUID(),
-            "D12",
-            "Wake up 8:00 to climb a rock",
-            setOf(),
-            false,
-            DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
-        )
-        repository.save(todoItem2)
-
-        val todoItem = TodoItem(
-            UUID.randomUUID(),
-            "D13",
-            "Wake up 8:00 to climb a rock",
-            setOf(todoItem1.id, todoItem2.id),
-            false,
-            DateTime("2019-10-19T00:00:00+09:00"),
-            DateTime("2019-10-19T00:00:00+09:00")
-        )
-        repository.save(todoItem)
+        val todoItem = TodoItem.create("Wake up 8:00 to climb a rock 3")
+        todoItem.addDependentId(todoItem1Id)
+        todoItem.addDependentId(todoItem2Id)
+        val todoItemId = repository.save(todoItem)
 
         // Act
-        repository.delete(todoItem2.id)
-        val actual = repository.findById(todoItem.id)
+        repository.delete(todoItem1Id)
+        val actual = repository.findById(todoItemId)
 
         // Assert
-        assertNotEquals(todoItem, actual)
-        assertEquals(setOf(todoItem1.id), actual.dependentIds)
+        assertEquals("Wake up 8:00 to climb a rock 3", actual.message)
+        assertEquals(setOf(todoItem2Id), actual.dependentIds)
     }
 
     @Test
-    fun `should be found result with a offset and a count`() {
+    fun `find a result with an offset and a count`() {
         // Arrange
         val repository: TodoItemRepository = ExposedTodoItemRepository()
-        for (i in 0..15) {
-            val todoItem = TodoItem(
-                UUID.randomUUID(),
-                "P$i",
-                "Wake up 8:00 to climb a rock",
-                setOf(),
-                false,
-                DateTime("2019-10-19T00:00:00+09:00"),
-                DateTime("2019-10-19T00:00:00+09:00")
-            )
+        for (i in 0L..15L) {
+            val todoItem = TodoItem.create("Wake up 8:00 to climb a rock $i")
             repository.save(todoItem)
         }
 
@@ -165,7 +106,54 @@ internal class ExposedTodoItemRepositoryTest {
 
         // Assert
         assertEquals(2, actual.size)
-        assertEquals("P10", actual[0].key)
-        assertEquals("P11", actual[1].key)
+        assertEquals(11, actual[0].id)
+        assertEquals(12, actual[1].id)
+    }
+
+    @Test
+    fun `update a todo item with an added dependency`() {
+        // Arrange
+        val repository: TodoItemRepository = ExposedTodoItemRepository()
+
+        val todoItem1 = TodoItem.create("Wake up 8:00 to climb a rock 1")
+        val todoItem2 = TodoItem.create("Wake up 8:00 to climb a rock 2")
+        val todoItem1Id = repository.save(todoItem1)
+        val todoItem2Id = repository.save(todoItem2)
+        val todoItem3 = TodoItem.create("Wake up 8:00 to climb a rock 3")
+        todoItem3.addDependentId(todoItem1Id)
+        val todoItem3Id = repository.save(todoItem3)
+
+        // Act
+        val actual = repository.findById(todoItem3Id)
+        actual.addDependentId(todoItem2Id)
+        repository.update(actual)
+
+        // Assert
+        assertEquals("Wake up 8:00 to climb a rock 3", actual.message)
+        assertEquals(setOf(todoItem1Id, todoItem2Id), actual.dependentIds)
+    }
+
+    @Test
+    fun `update a todo item with an removed dependency`() {
+        // Arrange
+        val repository: TodoItemRepository = ExposedTodoItemRepository()
+
+        val todoItem1 = TodoItem.create("Wake up 8:00 to climb a rock 1")
+        val todoItem2 = TodoItem.create("Wake up 8:00 to climb a rock 2")
+        val todoItem1Id = repository.save(todoItem1)
+        val todoItem2Id = repository.save(todoItem2)
+        val todoItem3 = TodoItem.create("Wake up 8:00 to climb a rock 3")
+        todoItem3.addDependentId(todoItem1Id)
+        todoItem3.addDependentId(todoItem2Id)
+        val todoItem3Id = repository.save(todoItem3)
+
+        // Act
+        val actual = repository.findById(todoItem3Id)
+        actual.removeDependentId(todoItem2Id)
+        repository.update(actual)
+
+        // Assert
+        assertEquals("Wake up 8:00 to climb a rock 3", actual.message)
+        assertEquals(setOf(todoItem1Id), actual.dependentIds)
     }
 }
