@@ -100,6 +100,14 @@ class ExposedTodoItemRepository : TodoItemRepository {
         }
     }
 
+    override fun countAll(): Int {
+        return transaction {
+            TodoItems
+                .selectAll()
+                .count()
+        }
+    }
+
     object TodoItems : Table() {
         val id = long("id").autoIncrement().primaryKey()
         val message = varchar("message", 250)

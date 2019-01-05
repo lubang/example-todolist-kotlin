@@ -6,4 +6,5 @@ interface TodoItemRepository {
     fun find(offset: Int, count: Int): List<TodoItem>
     fun delete(id: Long)
     fun update(todoItem: TodoItem)
+    fun countAll(): Int
 }
