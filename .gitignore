@@ -20,3 +20,4 @@ out
 build
 
 # Example Todolist Kotlin
+src/main/resources/static

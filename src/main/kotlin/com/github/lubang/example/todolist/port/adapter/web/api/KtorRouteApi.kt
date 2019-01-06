@@ -5,6 +5,9 @@ import com.github.lubang.example.todolist.domain.models.TodoItem
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.defaultResource
+import io.ktor.http.content.resources
+import io.ktor.http.content.static
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.*
@@ -17,6 +20,11 @@ class KtorRouteApi @Inject constructor(
 ) {
     init {
         application.routing {
+            static("/") {
+                resources("/static")
+                defaultResource("/static/index.html")
+            }
+
             route("/api/todo-items") {
                 post {
                     val request = call.receive<CreateTodoItemRequest>()
