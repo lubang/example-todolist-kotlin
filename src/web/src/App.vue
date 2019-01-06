@@ -1,29 +1,30 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
-  </div>
+  <v-app id="app">
+    <v-toolbar color="primary" dark fixed flat app>
+      <v-toolbar-title>Todolist</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <TodoItemWriter />
+    </v-toolbar>
+    <v-content>
+      <v-container fluid>
+        <TodoItemTable/>
+      </v-container>
+    </v-content>
+  </v-app>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import HelloWorld from './components/HelloWorld.vue'
+import TodoItemWriter from './components/TodoItemWriter.vue'
+import TodoItemTable from './components/TodoItemTable.vue'
+import axios from 'axios'
 
 @Component({
   components: {
-    HelloWorld,
+    TodoItemWriter,
+    TodoItemTable,
   },
 })
-export default class App extends Vue {}
-</script>
-
-<style lang="scss">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+export default class App extends Vue {
 }
-</style>
+</script>
