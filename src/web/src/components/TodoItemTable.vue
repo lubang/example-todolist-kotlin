@@ -3,7 +3,6 @@
     <v-data-table
       :headers="headers"
       :items="todolist"
-      :total-items="totalCount"
       no-data-text="등록된 할 일이 없습니다."
       hide-actions
       class="elevation-1"
@@ -28,9 +27,8 @@
           class="rows-per-page"
         ></v-select>
       </v-flex>
-      <v-spacer></v-spacer>
-      <v-flex>
-        <v-pagination v-model="page" :length="totalPage"></v-pagination>
+      <v-flex class="text-xs-center">
+        <v-pagination v-model="page" :length="totalPage" :total-visible="8"></v-pagination>
       </v-flex>
     </v-layout>
   </div>
@@ -75,16 +73,12 @@ export default class TodoItemTable extends Vue {
       width: '265',
     },
   ]
-  private rowsPerPageTypes = [10, 20, 30, 50, 100]
+  private rowsPerPageTypes = [5, 10, 20, 30, 50, 100]
   private page = 0
   private rowsPerPage = 10
 
   private get todolist(): TodoItem[] {
     return this.$store.getters.todolist
-  }
-
-  private get totalCount(): number {
-    return this.$store.getters.totalCount
   }
 
   private get totalPage(): number {
@@ -106,7 +100,7 @@ export default class TodoItemTable extends Vue {
 
   @Watch('rowsPerPage')
   private onRowsPerPageChanged(value: any, oldValue: any) {
-    const offset = this.$store.state.offset
+    const offset = 0
     this.$store.dispatch('fetchTodolist', {
       offset,
       rowsPerPage: value,
@@ -114,7 +108,7 @@ export default class TodoItemTable extends Vue {
   }
 
   private toHumanReadableTime(date: Date): string {
-    if (date == undefined) {
+    if (date === undefined) {
       return ''
     }
     const dateAt = moment(date)

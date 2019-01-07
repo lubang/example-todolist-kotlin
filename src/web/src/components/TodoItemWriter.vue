@@ -6,10 +6,11 @@
     <v-card>
       <v-card-title class="headline grey lighten-2" primary-title>할 일 추가하기</v-card-title>
       <v-card-text>
-        <v-text-field v-model="message"></v-text-field>
+        <v-text-field v-model="message" @keypress.enter.prevent="addTodoItem()"></v-text-field>
       </v-card-text>
       <v-divider></v-divider>
       <v-card-actions>
+        <v-btn flat @click="dialog = false">닫기</v-btn>
         <v-spacer></v-spacer>
         <v-btn color="primary" flat @click="addTodoItem()">추가</v-btn>
       </v-card-actions>
@@ -19,7 +20,6 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import axios from 'axios'
 
 @Component
 export default class TodoItemEditor extends Vue {
@@ -28,11 +28,8 @@ export default class TodoItemEditor extends Vue {
 
   private addTodoItem() {
     this.$store.dispatch('addTodoItem', { message: this.message }).then(() => {
-      this.dialog = false
       this.message = ''
-      setTimeout(() => {
-        this.$store.dispatch('fetchTodolist', {})
-      }, 300)
+      this.$store.dispatch('fetchTodolist', {})
     })
   }
 }
