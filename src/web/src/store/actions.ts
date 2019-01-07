@@ -33,5 +33,8 @@ export const actions: ActionTree<TodoState, TodoState> = {
   },
   async incompleteTodoItem({ commit }, { id }) {
     axios.delete(`/api/todo-items/${id}/completion`)
-  }
+  },
+  async editMessage({ commit }, { id, message }) {
+    axios.put(`/api/todo-items/${id}`, { message })
+  },
 }

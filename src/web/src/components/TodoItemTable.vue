@@ -9,7 +9,28 @@
     >
       <template slot="items" slot-scope="props">
         <td class="text-xs-right">{{ props.item.id }}</td>
-        <td>{{ props.item.message }}</td>
+        <td>
+          <v-dialog v-model="props.item.dialog" width="500">
+            <span slot="activator">{{ props.item.message }}</span>
+            <v-card>
+              <v-card-title class="headline grey lighten-2" primary-title>할 일 수정하기</v-card-title>
+              <v-card-text>
+                <v-text-field
+                  v-model="props.item.message"
+                  @keypress.enter.prevent="saveMessage(props.item.id, props.item.message, props.item.dialog)"
+                ></v-text-field>
+              </v-card-text>
+              <v-divider></v-divider>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  color="primary"
+                  @click.prevent="saveMessage(props.item.id, props.item.message, props.item.dialog)"
+                >수정</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </td>
         <td>
           <v-checkbox
             hide-details
@@ -17,9 +38,9 @@
             @click="toggleTodoItemCompletion(props.item.id, props.item.completed)"
           ></v-checkbox>
         </td>
-        <td class="text-xs-center">{{ toHumanReadableTime(props.item.writtenAt) }}</td>
-        <td class="text-xs-center">{{ toHumanReadableTime(props.item.modifiedAt) }}</td>
-        <td class="text-xs-center">{{ toHumanReadableTime(props.item.completedAt) }}</td>
+        <td class="text-xs-left">{{ toHumanReadableTime(props.item.writtenAt) }}</td>
+        <td class="text-xs-left">{{ toHumanReadableTime(props.item.modifiedAt) }}</td>
+        <td class="text-xs-left">{{ toHumanReadableTime(props.item.completedAt) }}</td>
       </template>
     </v-data-table>
     <v-layout class="pt-4">
@@ -35,6 +56,14 @@
         <v-pagination v-model="page" :length="totalPage" :total-visible="8"></v-pagination>
       </v-flex>
     </v-layout>
+    <v-layout class="mt-4 pa-3 white elevation-1">
+      <h4>사용법</h4>
+      <ul class="ml-4">
+        <li>우상단 '새 할 일 추가'를 눌러서 할 일을 등록합니다.</li>
+        <li>표의 '완료' ㅁ를 눌러서 할 일을 완료합니다.</li>
+        <li>표의 '할 일'을 누르면 내용을 수정할 수 있습니다.</li>
+      </ul>
+    </v-layout>
   </div>
 </template>
 
@@ -49,11 +78,11 @@ export default class TodoItemTable extends Vue {
     { text: 'ID', align: 'center', sortable: false, value: 'id', width: '80' },
     { text: '할 일', align: 'left', sortable: false, value: 'message' },
     {
-      text: '완료여부',
+      text: '완료',
       align: 'center',
       sortable: false,
       value: 'completed',
-      width: '80',
+      width: '60',
     },
     {
       text: '작성일시',
@@ -129,6 +158,15 @@ export default class TodoItemTable extends Vue {
         this.$store.dispatch('fetchTodolist', {})
       })
     }
+  }
+
+  private saveMessage(id: number, message: string, dialog: boolean) {
+    this.$store.dispatch('editMessage', { id, message }).then(() => {
+      dialog = false
+      setTimeout(() => {
+        this.$store.dispatch('fetchTodolist', {})
+      }, 300)
+    })
   }
 }
 </script>
