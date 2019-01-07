@@ -27,16 +27,13 @@ export default class TodoItemEditor extends Vue {
   private message = ''
 
   private addTodoItem() {
-    axios
-      .post('/api/todo-items', { message: this.message })
-      .then((response) => {
-        console.log(response)
-      })
-      .catch((error) => {
-        console.log(error)
-      })
-    this.dialog = false
-    this.message = ''
+    this.$store.dispatch('addTodoItem', { message: this.message }).then(() => {
+      this.dialog = false
+      this.message = ''
+      setTimeout(() => {
+        this.$store.dispatch('fetchTodolist', {})
+      }, 300)
+    })
   }
 }
 </script>

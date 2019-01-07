@@ -3,7 +3,7 @@
     <v-toolbar color="primary" dark fixed flat app>
       <v-toolbar-title>Todolist</v-toolbar-title>
       <v-spacer></v-spacer>
-      <TodoItemWriter />
+      <TodoItemWriter/>
     </v-toolbar>
     <v-content>
       <v-container fluid>
@@ -25,6 +25,5 @@ import axios from 'axios'
     TodoItemTable,
   },
 })
-export default class App extends Vue {
-}
+export default class App extends Vue {}
 </script>
