@@ -1,7 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("jvm") version "1.3.11"
+    id("com.github.johnrengelman.shadow") version "2.0.4"
+    application
 }
 
 group = "com.github.lubang"
@@ -31,6 +34,16 @@ dependencies {
     implementation("io.ktor:ktor-server-host-common:$ktorVersion")
     implementation("io.ktor:ktor-gson:$ktorVersion")
     testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
+}
+
+application {
+    mainClassName = "io.ktor.server.netty.EngineMain"
+}
+
+tasks.withType<ShadowJar> {
+    manifest {
+        attributes["Main-Class"] = application.mainClassName
+    }
 }
 
 tasks.withType<KotlinCompile> {
