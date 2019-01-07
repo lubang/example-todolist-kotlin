@@ -11,7 +11,11 @@
         <td class="text-xs-right">{{ props.item.id }}</td>
         <td>{{ props.item.message }}</td>
         <td>
-          <v-checkbox hide-details v-model="props.item.completed"></v-checkbox>
+          <v-checkbox
+            hide-details
+            v-model="props.item.completed"
+            @click="toggleTodoItemCompletion(props.item.id, props.item.completed)"
+          ></v-checkbox>
         </td>
         <td class="text-xs-center">{{ toHumanReadableTime(props.item.writtenAt) }}</td>
         <td class="text-xs-center">{{ toHumanReadableTime(props.item.modifiedAt) }}</td>
@@ -113,6 +117,18 @@ export default class TodoItemTable extends Vue {
     }
     const dateAt = moment(date)
     return `${dateAt.format('LLL')} (${dateAt.fromNow()})`
+  }
+
+  private toggleTodoItemCompletion(id: number, isCompleted: boolean) {
+    if (isCompleted) {
+      this.$store.dispatch('incompleteTodoItem', { id }).then(() => {
+        this.$store.dispatch('fetchTodolist', {})
+      })
+    } else {
+      this.$store.dispatch('completeTodoItem', { id }).then(() => {
+        this.$store.dispatch('fetchTodolist', {})
+      })
+    }
   }
 }
 </script>
