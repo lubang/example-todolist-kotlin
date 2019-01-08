@@ -1,6 +1,7 @@
 import { TodoState, TodoMutations } from './store-types'
 import { ActionTree, ActionContext } from 'vuex'
 import axios from 'axios'
+import { MessageAnalyzer } from '@/utils/MessageAnalyzer'
 
 export const actions: ActionTree<TodoState, TodoState> = {
   async fetchTodolist({ commit, state }, { offset, rowsPerPage }) {
@@ -26,15 +27,32 @@ export const actions: ActionTree<TodoState, TodoState> = {
     }
   },
   async addTodoItem({ commit }, { message }) {
-    axios.post('/api/todo-items', { message })
+    const analyzer = new MessageAnalyzer(message)
+    const extractedMessage = analyzer.extractMessage()
+    const response = await axios.post('/api/todo-items', {
+      message: extractedMessage,
+    })
+
+    const id = response.data.id
+    const dependencies = analyzer.extractDependencies()
+    for (const dependencyId of dependencies) {
+      axios.post(`/api/todo-items/${id}/dependencies`, { dependencyId })
+    }
+  },
+  async editMessage({ commit }, { id, message }) {
+    const analyzer = new MessageAnalyzer(message)
+    const extractedMessage = analyzer.extractMessage()
+    await axios.put(`/api/todo-items/${id}`, { message: extractedMessage })
+
+    const dependencies = analyzer.extractDependencies()
+    for (const dependencyId of dependencies) {
+      axios.post(`/api/todo-items/${id}/dependencies`, { dependencyId })
+    }
   },
   async completeTodoItem({ commit }, { id }) {
     axios.post(`/api/todo-items/${id}/completion`)
   },
   async incompleteTodoItem({ commit }, { id }) {
     axios.delete(`/api/todo-items/${id}/completion`)
-  },
-  async editMessage({ commit }, { id, message }) {
-    axios.put(`/api/todo-items/${id}`, { message })
   },
 }

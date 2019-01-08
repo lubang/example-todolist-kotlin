@@ -62,6 +62,7 @@
         <li>우상단 '새 할 일 추가'를 눌러서 할 일을 등록합니다.</li>
         <li>표의 '완료' ㅁ를 눌러서 할 일을 완료합니다.</li>
         <li>표의 '할 일'을 누르면 내용을 수정할 수 있습니다.</li>
+        <li>할 일 의존성은 '할 일' 내용 끝에 '@1, @2, @{id}' 형태로 작성하면 빠른 연결을 제공합니다. 그리고 '마우스 오른쪽 클릭'을 통해서도 의존성을 추가 가능합니다.</li>
       </ul>
     </v-layout>
   </div>
@@ -149,15 +150,10 @@ export default class TodoItemTable extends Vue {
   }
 
   private toggleTodoItemCompletion(id: number, isCompleted: boolean) {
-    if (isCompleted) {
-      this.$store.dispatch('incompleteTodoItem', { id }).then(() => {
-        this.$store.dispatch('fetchTodolist', {})
-      })
-    } else {
-      this.$store.dispatch('completeTodoItem', { id }).then(() => {
-        this.$store.dispatch('fetchTodolist', {})
-      })
-    }
+    const action = isCompleted ? 'incompleteTodoItem' : 'completeTodoItem'
+    this.$store.dispatch(action, { id }).then(() => {
+      this.$store.dispatch('fetchTodolist', {})
+    })
   }
 
   private saveMessage(id: number, message: string, dialog: boolean) {
