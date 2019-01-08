@@ -11,7 +11,14 @@
         <td class="text-xs-right">{{ props.item.id }}</td>
         <td>
           <v-dialog v-model="props.item.dialog" width="500">
-            <span slot="activator">{{ props.item.message }}</span>
+            <span slot="activator">
+              {{ props.item.message }}
+              <span
+                class="green--text ml-1"
+                :key="did"
+                v-for="did in props.item.dependentIds"
+              >@{{did}}</span>
+            </span>
             <v-card>
               <v-card-title class="headline grey lighten-2" primary-title>할 일 수정하기</v-card-title>
               <v-card-text>
@@ -25,7 +32,7 @@
                 <v-spacer></v-spacer>
                 <v-btn
                   color="primary"
-                  @click.prevent="saveMessage(props.item.id, props.item.message, props.item.dialog)"
+                  @click.stop="saveMessage(props.item.id, props.item.message, props.item.dialog)"
                 >수정</v-btn>
               </v-card-actions>
             </v-card>
@@ -35,12 +42,15 @@
           <v-checkbox
             hide-details
             v-model="props.item.completed"
-            @click="toggleTodoItemCompletion(props.item.id, props.item.completed)"
+            @click.stop="toggleTodoItemCompletion(props.item.id, props.item.completed)"
           ></v-checkbox>
         </td>
         <td class="text-xs-left">{{ toHumanReadableTime(props.item.writtenAt) }}</td>
         <td class="text-xs-left">{{ toHumanReadableTime(props.item.modifiedAt) }}</td>
         <td class="text-xs-left">{{ toHumanReadableTime(props.item.completedAt) }}</td>
+        <td>
+          <v-icon small @click.stop="deleteTodoItem(props.item.id)">delete</v-icon>
+        </td>
       </template>
     </v-data-table>
     <v-layout class="pt-4">
@@ -62,7 +72,7 @@
         <li>우상단 '새 할 일 추가'를 눌러서 할 일을 등록합니다.</li>
         <li>표의 '완료' ㅁ를 눌러서 할 일을 완료합니다.</li>
         <li>표의 '할 일'을 누르면 내용을 수정할 수 있습니다.</li>
-        <li>할 일 의존성은 '할 일' 내용 끝에 '@1, @2, @{id}' 형태로 작성하면 빠른 연결을 제공합니다. 그리고 '마우스 오른쪽 클릭'을 통해서도 의존성을 추가 가능합니다.</li>
+        <li>할 일 의존성은 '할 일' 내용 끝에 '@1, @2, @{id}' 형태로 작성하여 등록합니다. 변경 시에도 @1, @2와 같이 입력하면 변경됩니다. @를 사용하지 않는 경우에는 기존의 값이 유지됩니다.</li>
       </ul>
     </v-layout>
   </div>
@@ -105,6 +115,13 @@ export default class TodoItemTable extends Vue {
       sortable: false,
       value: 'completedAt',
       width: '265',
+    },
+    {
+      text: '동작',
+      align: 'left',
+      sortable: false,
+      value: 'action',
+      width: '60',
     },
   ]
   private rowsPerPageTypes = [5, 10, 20, 30, 50, 100]
@@ -159,9 +176,13 @@ export default class TodoItemTable extends Vue {
   private saveMessage(id: number, message: string, dialog: boolean) {
     this.$store.dispatch('editMessage', { id, message }).then(() => {
       dialog = false
-      setTimeout(() => {
-        this.$store.dispatch('fetchTodolist', {})
-      }, 300)
+      this.$store.dispatch('fetchTodolist', {})
+    })
+  }
+
+  private deleteTodoItem(id: number) {
+    this.$store.dispatch('deleteTodItem', { id }).then(() => {
+      this.$store.dispatch('fetchTodolist', {})
     })
   }
 }

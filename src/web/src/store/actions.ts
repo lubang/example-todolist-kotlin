@@ -10,7 +10,7 @@ export const actions: ActionTree<TodoState, TodoState> = {
       const currentOffset = offset === undefined ? state.offset : offset
       const currentRowsPerPage =
         offset === undefined ? state.rowsPerPage : rowsPerPage
-      axios
+      await axios
         .get(
           `/api/todo-items?offset=${currentOffset}&count=${currentRowsPerPage}`,
         )
@@ -29,30 +29,43 @@ export const actions: ActionTree<TodoState, TodoState> = {
   async addTodoItem({ commit }, { message }) {
     const analyzer = new MessageAnalyzer(message)
     const extractedMessage = analyzer.extractMessage()
-    const response = await axios.post('/api/todo-items', {
+    const dependentIds = analyzer.extractDependencies()
+    await axios.post('/api/todo-items', {
       message: extractedMessage,
+      dependentIds,
     })
-
-    const id = response.data.id
-    const dependencies = analyzer.extractDependencies()
-    for (const dependencyId of dependencies) {
-      axios.post(`/api/todo-items/${id}/dependencies`, { dependencyId })
-    }
   },
   async editMessage({ commit }, { id, message }) {
     const analyzer = new MessageAnalyzer(message)
     const extractedMessage = analyzer.extractMessage()
-    await axios.put(`/api/todo-items/${id}`, { message: extractedMessage })
-
-    const dependencies = analyzer.extractDependencies()
-    for (const dependencyId of dependencies) {
-      axios.post(`/api/todo-items/${id}/dependencies`, { dependencyId })
-    }
+    const dependentIds = analyzer.extractDependencies()
+    await axios.put(`/api/todo-items/${id}`, {
+      message: extractedMessage,
+      dependentIds,
+    })
   },
   async completeTodoItem({ commit }, { id }) {
-    axios.post(`/api/todo-items/${id}/completion`)
+    try {
+      commit(TodoMutations.INIT_WARN)
+      await axios.post(`/api/todo-items/${id}/completion`)
+    } catch (error) {
+      commit(TodoMutations.WARN, { warn: error.response.data })
+    }
   },
   async incompleteTodoItem({ commit }, { id }) {
-    axios.delete(`/api/todo-items/${id}/completion`)
+    commit(TodoMutations.INIT_WARN)
+    try {
+      await axios.delete(`/api/todo-items/${id}/completion`)
+    } catch (error) {
+      commit(TodoMutations.WARN, { warn: error.response.data })
+    }
+  },
+  async deleteTodItem({ commit }, { id }) {
+    commit(TodoMutations.INIT_WARN)
+    try {
+      await axios.delete(`/api/todo-items/${id}`)
+    } catch (error) {
+      commit(TodoMutations.WARN, { warn: error.response.data })
+    }
   },
 }

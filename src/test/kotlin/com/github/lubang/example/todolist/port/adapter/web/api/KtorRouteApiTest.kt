@@ -39,7 +39,8 @@ internal class KtorRouteApiTest {
             // Act
             handleRequest(HttpMethod.Post, "/api/todo-items") {
                 val request = KtorRouteApi.CreateTodoItemRequest(
-                    "This is a TodoItem message"
+                    "This is a TodoItem message",
+                    setOf()
                 )
                 setBody(gson.toJson(request))
             }.apply {
@@ -72,7 +73,8 @@ internal class KtorRouteApiTest {
         }) {
             val createResponse = handleRequest(HttpMethod.Post, "/api/todo-items") {
                 val request = KtorRouteApi.CreateTodoItemRequest(
-                    "This is a TodoItem message"
+                    "This is a TodoItem message",
+                    setOf()
                 )
                 setBody(gson.toJson(request))
             }
@@ -119,7 +121,8 @@ internal class KtorRouteApiTest {
         }) {
             val createResponse = handleRequest(HttpMethod.Post, "/api/todo-items") {
                 val request = KtorRouteApi.CreateTodoItemRequest(
-                    "This is a TodoItem message"
+                    "This is a TodoItem message",
+                    setOf()
                 )
                 setBody(gson.toJson(request))
             }
@@ -160,7 +163,8 @@ internal class KtorRouteApiTest {
         }) {
             val createResponse = handleRequest(HttpMethod.Post, "/api/todo-items") {
                 val request = KtorRouteApi.CreateTodoItemRequest(
-                    "This is a TodoItem message"
+                    "This is a TodoItem message",
+                    setOf()
                 )
                 setBody(gson.toJson(request))
             }
@@ -201,7 +205,8 @@ internal class KtorRouteApiTest {
         }) {
             val createResponse = handleRequest(HttpMethod.Post, "/api/todo-items") {
                 val request = KtorRouteApi.CreateTodoItemRequest(
-                    "This is a TodoItem message"
+                    "This is a TodoItem message",
+                    setOf()
                 )
                 setBody(gson.toJson(request))
             }
@@ -230,7 +235,8 @@ internal class KtorRouteApiTest {
         }) {
             val createResponse = handleRequest(HttpMethod.Post, "/api/todo-items") {
                 val request = KtorRouteApi.CreateTodoItemRequest(
-                    "This is a TodoItem message"
+                    "This is a TodoItem message",
+                    setOf()
                 )
                 setBody(gson.toJson(request))
             }
@@ -275,7 +281,8 @@ internal class KtorRouteApiTest {
         }) {
             val createResponse = handleRequest(HttpMethod.Post, "/api/todo-items") {
                 val request = KtorRouteApi.CreateTodoItemRequest(
-                    "This is a TodoItem message"
+                    "This is a TodoItem message",
+                    setOf()
                 )
                 setBody(gson.toJson(request))
             }

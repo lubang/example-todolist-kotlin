@@ -7,21 +7,35 @@ import javax.inject.Inject
 class TodoItemService @Inject constructor(
     private val todoItemRepository: TodoItemRepository
 ) {
-    fun createTodoItem(message: String): TodoItem {
+    fun createTodoItem(
+        message: String,
+        dependentIds: Set<Long>
+    ): TodoItem {
         val todoItem = TodoItem.create(message)
+        todoItem.updateDependentIds(dependentIds)
         val id = todoItemRepository.save(todoItem)
         return todoItemRepository.findById(id)
     }
 
-    fun editMessage(id: Long, message: String): TodoItem {
+    fun editMessage(
+        id: Long,
+        message: String,
+        dependentIds: Set<Long>
+    ): TodoItem {
         val todoItem = todoItemRepository.findById(id)
         todoItem.editMessage(message)
+        todoItem.updateDependentIds(dependentIds)
         todoItemRepository.update(todoItem)
         return todoItem
     }
 
     fun complete(id: Long): TodoItem {
         val todoItem = todoItemRepository.findById(id)
+        todoItem.dependentIds.forEach {
+            if (!todoItemRepository.getCompleted(it)) {
+                throw InvalidDependentCompletionException("TodoItem requires to complete that all dependencies are completed")
+            }
+        }
         todoItem.complete()
         todoItemRepository.update(todoItem)
         return todoItem

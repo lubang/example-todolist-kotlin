@@ -10,6 +10,8 @@
       <TodoItemWriter/>
     </v-toolbar>
     <v-content>
+      <v-alert :value="error !== null" type="error">{{ error }}</v-alert>
+      <v-alert :value="warn !== null" type="warning">{{ warn }}</v-alert>
       <v-container fluid>
         <TodoItemTable/>
       </v-container>
@@ -31,6 +33,14 @@ import TodoItemTable from './components/TodoItemTable.vue'
 export default class App extends Vue {
   private get totalCount(): number {
     return this.$store.getters.totalCount
+  }
+
+  private get error(): string | null {
+    return this.$store.getters.error
+  }
+
+  private get warn(): string | null {
+    return this.$store.getters.warn
   }
 }
 </script>

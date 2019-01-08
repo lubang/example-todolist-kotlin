@@ -15,4 +15,10 @@ export const getters: GetterTree<TodoState, TodoState> = {
     }
     return Math.ceil(state.totalCount / state.rowsPerPage)
   },
+  error(state): string | null {
+    return state.error
+  },
+  warn(state): string | null {
+    return state.warn
+  },
 }

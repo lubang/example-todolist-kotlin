@@ -14,6 +14,7 @@ const store: StoreOptions<TodoState> = {
     rowsPerPage: 10,
     totalCount: 0,
     error: null,
+    warn: null,
   },
   actions,
   mutations,

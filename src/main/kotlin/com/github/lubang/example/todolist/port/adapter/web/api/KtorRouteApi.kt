@@ -1,5 +1,6 @@
 package com.github.lubang.example.todolist.port.adapter.web.api
 
+import com.github.lubang.example.todolist.application.InvalidDependentCompletionException
 import com.github.lubang.example.todolist.application.TodoItemService
 import com.github.lubang.example.todolist.domain.models.TodoItem
 import io.ktor.application.Application
@@ -28,7 +29,7 @@ class KtorRouteApi @Inject constructor(
             route("/api/todo-items") {
                 post {
                     val request = call.receive<CreateTodoItemRequest>()
-                    val todoItem: TodoItem = todoItemService.createTodoItem(request.message)
+                    val todoItem: TodoItem = todoItemService.createTodoItem(request.message, request.dependentIds)
                     val response = toTodoItemResponse(todoItem)
                     call.respond(HttpStatusCode.Created, response)
                 }
@@ -50,7 +51,7 @@ class KtorRouteApi @Inject constructor(
                     put {
                         val id = call.parameters["id"]!!.toLong()
                         val request = call.receive<EditTodoItemRequest>()
-                        val todoItem: TodoItem = todoItemService.editMessage(id, request.message)
+                        val todoItem: TodoItem = todoItemService.editMessage(id, request.message, request.dependentIds)
                         val response = toTodoItemResponse(todoItem)
                         call.respond(HttpStatusCode.OK, response)
                     }
@@ -63,9 +64,13 @@ class KtorRouteApi @Inject constructor(
 
                     post("/completion") {
                         val id = call.parameters["id"]!!.toLong()
-                        val todoItem: TodoItem = todoItemService.complete(id)
-                        val response = toTodoItemResponse(todoItem)
-                        call.respond(HttpStatusCode.OK, response)
+                        try {
+                            val todoItem: TodoItem = todoItemService.complete(id)
+                            val response = toTodoItemResponse(todoItem)
+                            call.respond(HttpStatusCode.OK, response)
+                        } catch (e: InvalidDependentCompletionException) {
+                            call.respond(HttpStatusCode.Conflict, "의존성이 있는 할 일을 먼저 완료하세요")
+                        }
                     }
 
                     delete("/completion") {
@@ -108,7 +113,8 @@ class KtorRouteApi @Inject constructor(
     }
 
     data class CreateTodoItemRequest(
-        val message: String
+        val message: String,
+        val dependentIds: Set<Long>
     )
 
     data class EditTodoItemRequest(

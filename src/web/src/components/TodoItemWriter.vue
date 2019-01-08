@@ -33,9 +33,7 @@ export default class TodoItemEditor extends Vue {
 
     this.$store.dispatch('addTodoItem', { message: this.message }).then(() => {
       this.message = ''
-      setTimeout(() => {
-        this.$store.dispatch('fetchTodolist', {})
-      }, 300)
+      this.$store.dispatch('fetchTodolist', {})
     })
   }
 }

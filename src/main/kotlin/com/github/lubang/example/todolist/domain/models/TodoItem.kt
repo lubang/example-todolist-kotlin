@@ -33,18 +33,19 @@ private constructor(
     }
 
     fun addDependentId(dependentId: Long) {
-        val mutableSet = this.dependentIds.toMutableSet()
-        mutableSet.add(dependentId)
-
-        this.dependentIds = mutableSet
-        this.modifiedAt = DateTime()
+        val newDependentIds = this.dependentIds.toMutableSet()
+        newDependentIds.add(dependentId)
+        this.updateDependentIds(newDependentIds)
     }
 
     fun removeDependentId(dependentId: Long) {
-        val mutableSet = this.dependentIds.toMutableSet()
-        mutableSet.remove(dependentId)
+        val newDependentIds = this.dependentIds.toMutableSet()
+        newDependentIds.remove(dependentId)
+        this.updateDependentIds(newDependentIds)
+    }
 
-        this.dependentIds = mutableSet
+    fun updateDependentIds(dependentIds: Set<Long>) {
+        this.dependentIds = dependentIds
         this.modifiedAt = DateTime()
     }
 

@@ -7,4 +7,5 @@ interface TodoItemRepository {
     fun delete(id: Long)
     fun update(todoItem: TodoItem)
     fun countAll(): Int
+    fun getCompleted(id: Long): Boolean
 }

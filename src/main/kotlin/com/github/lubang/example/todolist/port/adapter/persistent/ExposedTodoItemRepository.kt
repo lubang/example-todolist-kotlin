@@ -108,6 +108,17 @@ class ExposedTodoItemRepository : TodoItemRepository {
         }
     }
 
+    override fun getCompleted(id: Long): Boolean {
+        return transaction {
+            val row = TodoItems
+                .slice(TodoItems.completed)
+                .select { TodoItems.id eq id }
+                .limit(1)
+                .first()
+            row[TodoItems.completed]
+        }
+    }
+
     object TodoItems : Table() {
         val id = long("id").autoIncrement().primaryKey()
         val message = varchar("message", 250)
