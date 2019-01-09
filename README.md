@@ -1,4 +1,21 @@
 # Example Todolist Kotlin
+## Introduction
+
+Example Todolist Kotlin(ETK) is a toolist web service example with Kotlin and Ktor based REST API. Web UI is based on Vue.
+
+**Techstack**
+- Frontend: Kotlin, Ktor, HikariCP, Guice, H2, Junit4, Mockito
+- Backend: Vue, Vuex, Vuetify, Typscript, Axios, Moment.js
+
+This project show how to design and develop an web service with Ktor and SPA. REST API and the repository is designed with DIP(Dependency Inversion Principle). Vue and Vuex with Vuetify in Typscript. Check commit history!
+
+
+**Contact to me anytime**
+
+This project is in Korean. But you can ask about this project if you have a question. Leave an issue or mail to me ([@lubang](https://github.com/lubang)). Thanks.
+
+---
+
 Example-todolist-kotlin(이하 ETK)은 Todolist 예제로 Kotlin과 Ktor 기반의 REST API 서버입니다. Web UI는 Vue, Vuex를 이용하여 구현하였습니다.
 
 ![ScreenShot](./doc/ScreenShot.png)
